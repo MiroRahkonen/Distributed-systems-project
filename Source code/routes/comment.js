@@ -20,6 +20,7 @@ router.get('/data/:postid',async (req,res,next)=>{
 })
 
 router.delete('/delete',async (req,res,next)=>{
+    //Deleting a comment also deletes the upvote object
     await Comments.deleteOne({_id: req.body.commentID});
     await Upvotes.deleteOne({commentID: req.body.commentID});
 

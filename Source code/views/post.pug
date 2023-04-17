@@ -1,11 +1,13 @@
 extends layout 
 block content 
     include navbar.pug
-    div(id='post')
+    div(id='post' class='post')
 
-    div(id='create-comment')
+    h5 Comments
+    div(id='create-comment' class='create-comment')
         form(id='comment-form')
-            textarea(id='textarea-message' name='message' form='comment-form' class='materialize-textarea' placeholder='Write your message here...'  oninput='this.style.height = this.scrollHeight + "px"' required)
+            textarea(id='textarea-message' name='message' form='comment-form' class='materialize-textarea' placeholder='Write your comment here...'  oninput='this.style.height = this.scrollHeight + "px"' required)
             input(type='submit' class='btn')
     div(id='comments' class='comments')
+        
     script(src='/javascripts/post.js' defer)

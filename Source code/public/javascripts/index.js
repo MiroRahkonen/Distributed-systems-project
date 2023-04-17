@@ -42,8 +42,8 @@ async function createNewPost(event){
         body: JSON.stringify(upvoteDetails)
     });
 
-    if(response.status === 200){
-        window.location.reload();
+    if(response.status === 200){    //If creating the post was successful, redirect to new post
+        window.location.href = `/post/${newpostID}`;
     }
 }
 
@@ -54,24 +54,33 @@ async function initializePosts(){
     })
     data = await response.json();
     postlist = data;
-    postlist.forEach((post,index)=>{
-        let deletebutton = '';
+    postlist.forEach(async (post,i)=>{
+        let button = '';
+
+        response = await fetch(`/upvote/post/${post._id}`,{
+            method: 'GET'
+        })
+        let upvoteData = await response.json();
+        let upvoteCount = upvoteData.count;
+
+        //Add button to delete this post if the user matches the current user
         if(post.username === currentUsername){
-            deletebutton = `
-            <div class='center-align'>
-                <a class="btn right red" onclick='deletePost(${index})'>
+            button = `
+                <a class="btn right red" onclick='deletePost(${i})'>
                     <i class="material-icons">delete</i>
-                </a>
-            </div>`
+                </a>`
         }
         posts.innerHTML += `
-            <div id='${index}' class='post'>
-                ${deletebutton}
+            <div class='post'>
+                <div class='center-align'>
+                    ${button}
+                </div>
                 <a id='title' class='post-link' href="http://localhost:3000/post/${post._id}">${post.title} </a>
-                <p id='username'>Posted by: ${post.username}</p>
-                <p id='message'>Message: ${post.message}</p>
+
+                <h6 id='username'>Posted by: ${post.username}</h6>
+                <h7>Upvotes: ${upvoteCount}</h7>
             </div>
-        `
+            `
     })
 }
 

@@ -1,5 +1,6 @@
 const post = document.getElementById('post');
 const comments = document.getElementById('comments');
+const createCommentSection = document.getElementById('create-comment');
 const commentForm = document.getElementById('comment-form');
 commentForm.addEventListener('submit',postComment);
 
@@ -52,18 +53,7 @@ async function postComment(event){
 }
 
 async function initializePost(){
-    let response,data;
-    authToken = localStorage.getItem('auth_token');
-
-    if(authToken){
-        response = await fetch('/user/currentuser',{
-        headers: {
-                'authorization': 'Bearer ' + authToken
-            }
-        })
-        data = await response.json();
-        currentUsername = data.username;
-    }
+    let response;
 
     response = await fetch(`/post/data/${postID}`,{
         method: 'GET',
@@ -71,27 +61,51 @@ async function initializePost(){
             'Content-Type': 'application/json'
         }
     })
-    if(response.status !== 200){
+    if(response.status !== 200){   //Redirecting to index if no post with URL is found
         return window.location.href='/';
     }
-    data = await response.json();
-    postData = data;
-    deletebutton = '';
+    postData = await response.json();
+    button = '';
+
+    response = await fetch(`/upvote/post/${postID}`,{
+        method: 'GET'
+    })
+    let upvoteData = await response.json();
+    let upvoteCount = upvoteData.count;
+    let upvoters = upvoteData.upvoters;
+
     if(postData.username === currentUsername){
-        deletebutton = `
-        <div>
+        button = `
             <a class='btn right red' onclick='deletePost()'>
                 <i class='material-icons'>delete</i>
-            </a>
-        </div>`
+            </a>`
+    }
+    else if(currentUsername !== ''){
+        if(upvoters.includes(currentUsername)){
+            // If user has already upvoted, add button to remove upvote
+            button = `
+            <a class='btn right orange' onclick='postUpvote(-1)'>
+                    <i class='material-icons'>thumb_up</i>
+            </a>`
+        }
+        else{
+            // If user hasn't upvoted, add upvote button
+            button = `
+            <a class='btn right grey' onclick='postUpvote(1)'>
+                <i class='material-icons'>thumb_up</i>
+            </a>`
+        }
     }
     post.innerHTML = 
-    `<div'>
-        ${deletebutton}
-        <h5 id='title'>${postData.title}</h5> 
-        <p>Posted by: ${postData.username}</p>
-        <p>${postData.message}</p>
-    </div>`
+        `<div'>
+            <div>
+                ${button}
+                <p class='right'>Upvotes: ${upvoteCount} </p>
+            </div>
+            <h5 id='title'>${postData.title}</h5> 
+            <p>Posted by: ${postData.username}</p>
+            <pre>${postData.message}</pre>
+        </div>`
 }
 
 async function deletePost(){
@@ -110,38 +124,90 @@ async function deletePost(){
 
 async function initializeComments(){
     comments.innerHTML = '';
-    editbuttons = '';
+    button = '';
 
     let response = await fetch(`/comment/data/${postID}`,{
         method: 'GET'
     })
     let data = await response.json();
     commentlist = data;
+
+    // Going through each comment object, and creating a comment to be displayed
     commentlist.forEach(async (comment,i)=>{
-        
-        response = await fetch(`/upvote/${comment._id}`,{
+        response = await fetch(`/upvote/comment/${comment._id}`,{
             method: 'GET'
         })
         let upvoteData = await response.json();
-        console.log(upvoteData);
+        const upvoteCount = upvoteData.count;
+        const upvoters = upvoteData.upvoters;
         
+        //If comment is posted by current user, add delete button
         if(comment.username === currentUsername){
-            editbuttons = `
-            <div>
+            button = `
                 <a class='btn right red' onclick='deleteComment(${i})'>
                     <i class='material-icons'>delete</i>
-                </a>     
-            </div>`
+                </a>`
         }
-        //<p class='right'>Upvotes: ${comment.upvotes} </p>
+        else if(currentUsername !== ''){
+            if(upvoters.includes(currentUsername)){
+                // If user has already upvoted, add button to remove upvote
+                button = `
+                <a class='btn right orange' onclick='commentUpvote(${i},-1)'>
+                        <i class='material-icons'>thumb_up</i>
+                </a>`
+            }
+            else{
+                // If user hasn't upvoted, add upvote button
+                button = `
+                <a class='btn right grey' onclick='commentUpvote(${i},1)'>
+                    <i class='material-icons'>thumb_up</i>
+                </a>`
+            }
+        }
         comments.innerHTML += `
-        <div id='${i}' class='comment'>
-            ${editbuttons}
-            <p id='username'>Username: ${comment.username}</p>
-            <p id='message'>Message: ${comment.message}</p>
+        <div class='comment'>
+            <div>
+                ${button}
+                <p class='right'>Upvotes: ${upvoteCount} </p>
+            </div>
+            <p id='username'><span class='comment-poster'>${comment.username}</span>: ${comment.message}</p>
         </div>
         `
     })
+}
+
+async function commentUpvote(i,upvoteChange){
+    const commentID = commentlist[i]._id;
+    let commentDetails = {
+        commentID: commentID,
+        upvoter: currentUsername,
+        change: upvoteChange
+    }
+    let response = await fetch(`/upvote/comment/${commentID}`,{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(commentDetails)
+    })
+    window.location.reload();
+}
+
+async function postUpvote(upvoteChange){
+
+    let postDetails = {
+        postID: postID,
+        upvoter: currentUsername,
+        change: upvoteChange
+    }
+    let response = await fetch(`/upvote/post/${postID}`,{
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postDetails)
+    })
+    window.location.reload();
 }
 
 async function deleteComment(i){
@@ -158,5 +224,23 @@ async function deleteComment(i){
     }
 }
 
+async function checkToken(){
+    authToken = localStorage.getItem('auth_token');
+    if(authToken){
+        let response = await fetch('/user/currentuser',{
+            headers: {
+                'authorization': 'Bearer ' + authToken
+            }
+        })
+        data = await response.json();
+        currentUsername = data.username;
+        createCommentSection.style.display = 'block';
+    }
+    else{
+        createCommentSection.style.display = 'none';
+    }
+}
+
+checkToken();
 initializePost();
 initializeComments();

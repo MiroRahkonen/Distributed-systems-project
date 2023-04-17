@@ -1,12 +1,11 @@
 extends layout
 
 block content
-
   include navbar.pug
-  p Welcome to the forum
+  h5 Welcome to the forum! 
 
   div(id='create-post' class='create-post' )
-    h5 New post
+    h6 Create a new post
     form(id='post-form')
       textarea(name='title' form='post-form' class='materialize-textarea' placeholder='Post title' maxlength='50'  oninput='this.style.height = this.scrollHeight + "px"' required)
       label(for='title') Title(50 char. max)
@@ -16,6 +15,7 @@ block content
       br
       input(type='submit' class='btn')
 
+  h4 Posts
   div(id='posts' class='z-depth-3')
 
   script(src='/javascripts/index.js' defer)

@@ -22,6 +22,7 @@ router.post('/create',validateToken,async (req,res,next)=>{
 })
 
 router.delete('/delete',async (req,res,next)=>{
+    //Deleting a post deletes all of its comments and the upvote objects
     await Posts.deleteOne({_id: req.body.postID});
     await Comments.deleteMany({postID: req.body.postID});
     await Upvotes.deleteMany({postID: req.body.postID});
