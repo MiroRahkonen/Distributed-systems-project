@@ -1,0 +1,16 @@
+extends layout 
+block content 
+    include navbar.pug
+
+    h1 Register 
+    form(id='register-form')
+        label(for='username') Username
+        input(name='username' required)
+        label(for='email') E-mail (must be valid e-mail)
+        input(type='email' name='email' required)
+        label(for='password') Password (requires: 6 characters with uppercase and lowercase letters with at least 1 number)
+        input(type='password' name='password' required)
+        br
+        br
+        input(class='btn' type='submit' value='Register')
+    script(src='/javascripts/register.js' defer)

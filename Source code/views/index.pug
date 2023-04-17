@@ -1,0 +1,21 @@
+extends layout
+
+block content
+
+  include navbar.pug
+  p Welcome to the forum
+
+  div(id='create-post' class='create-post' )
+    h5 New post
+    form(id='post-form')
+      textarea(name='title' form='post-form' class='materialize-textarea' placeholder='Post title' maxlength='50'  oninput='this.style.height = this.scrollHeight + "px"' required)
+      label(for='title') Title(50 char. max)
+      textarea(name='message' form='post-form' class='materialize-textarea' placeholder='Write your message here...'  oninput='this.style.height = this.scrollHeight + "px"' required)
+      label(for='message') Message
+      br
+      br
+      input(type='submit' class='btn')
+
+  div(id='posts' class='z-depth-3')
+
+  script(src='/javascripts/index.js' defer)

@@ -1,0 +1,78 @@
+html{
+  background-color: #181a1b;
+  color: white;
+}
+
+body {
+  color: white;
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+textarea{
+  background-color: white;
+  color: white;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.error {
+  color: red;
+}
+
+.navbar-button{
+  margin: 5px;
+}
+
+.nav-wrapper{
+  background-color: #b11016;
+}
+
+.post{
+  margin-top: 30px;
+  padding: 7px;
+  border-radius: 5px;
+  border: 2px solid gray;
+}
+
+#poster{
+  font-weight: bold;
+}
+
+.comment-textarea{
+  background-color:#ffffff;
+  color:#000;
+}
+
+.post-link{
+  font-size: 30px;
+}
+
+.comments{
+  margin-top: 30px;
+  padding: 7px;
+  border-radius: 5px;
+  border: 1px solid gray;
+}
+
+.comment{
+  margin-bottom: 30px;
+  padding: 5px;
+  border: 1px solid gray;
+}
+
+a.btn{
+  margin-right: 3px;
+  margin-left: 3px;
+  width: 50px;
+  height: 40px;
+}
+
+#toast-container {
+  top: 10%;
+  left:5%;
+  right: auto !important;
+  bottom: auto !important;
+}

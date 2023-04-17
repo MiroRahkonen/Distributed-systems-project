@@ -1,0 +1,14 @@
+extends layout 
+block content
+    include navbar.pug
+
+    h1 Login
+    form(action='' id='login-form' method='POST')
+        label(for='username') Username 
+        input(name='username' id='username' required)
+        label(for='password') Password 
+        input(type='password' name='password' id='password' required)
+        br
+        br
+        input(class='btn' type='submit' value='Login')
+    script(src='/javascripts/login.js' defer)
