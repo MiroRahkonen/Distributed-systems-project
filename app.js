@@ -11,7 +11,7 @@ var loginRouter = require('./routes/login');
 var registerRouter = require('./routes/register');
 var postRouter = require('./routes/post');
 var commentRouter = require('./routes/comment');
-var userRouter = require('./routes/user');
+var authenticateRouter = require('./routes/authenticate');
 var upvoteRouter = require('./routes/upvote');
 
 var app = express();
@@ -31,7 +31,7 @@ app.use('/login', loginRouter);
 app.use('/register', registerRouter);
 app.use('/post', postRouter);
 app.use('/comment',commentRouter);
-app.use('/user',userRouter);
+app.use('/authenticate',authenticateRouter);
 app.use('/upvote',upvoteRouter);
 
 // catch 404 and forward to error handler

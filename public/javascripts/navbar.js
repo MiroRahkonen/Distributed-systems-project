@@ -5,13 +5,25 @@ const loginButton = document.getElementById('login-button');
 const registerButton = document.getElementById('register-button');
 
 
-async function initializeHeader(){
-    const authToken = localStorage.getItem('auth_token');
-
+async function checkAuthToken(){
+    authToken = localStorage.getItem('auth_token');
     if(!authToken){
-        logoutSection.style.display = 'none';
+        return logoutSection.style.display = 'none';
     }
-    else{
+
+    let response = await fetch('/authenticate',{
+        method: 'GET',
+        headers: {
+            'authorization': 'Bearer ' + authToken
+        }
+    })
+    // If token has expired, remove token and reload page
+    if(response.status !== 200){
+        localStorage.removeItem('auth_token');
+        return window.location.reload();
+    }
+    // If token is valid, set current username and show comment creation form
+    else if(response.status === 200){
         loginButton.style.display = 'none';
         registerButton.style.display = 'none';
     }
@@ -19,7 +31,10 @@ async function initializeHeader(){
 
 logoutButton.addEventListener('click',()=>{
     localStorage.removeItem('auth_token');
-    return document.location.reload();
+    M.toast({html: 'Logging out, refreshing page'});
+    setTimeout(()=>{
+        window.location.reload();
+    },1500);
 })
 
-initializeHeader();
+checkAuthToken();

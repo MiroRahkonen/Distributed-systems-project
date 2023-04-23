@@ -42,8 +42,12 @@ async function createNewPost(event){
         body: JSON.stringify(upvoteDetails)
     });
 
-    if(response.status === 200){    //If creating the post was successful, redirect to new post
-        window.location.href = `/post/${newpostID}`;
+    //If creating the post was successful, redirect to new post
+    if(response.status === 200){    
+        M.toast({html: 'Post created! Redirecting to post'});
+        setTimeout(()=>{
+            window.location.href = `/post/${newpostID}`;
+        },1500);
     }
 }
 
@@ -94,26 +98,39 @@ async function deletePost(i){
     })
 
     if(response.status === 200){
-        window.location.reload();
+        M.toast({html: 'Post deleted!'});
+        setTimeout(()=>{
+            window.location.reload();
+        },1500);
     }
 }
 
-async function checkToken(){
-    const authToken = localStorage.getItem('auth_token');
-    if(authToken){
-        let response = await fetch('/user/currentuser',{
-            headers: {
-                'authorization': 'Bearer ' + authToken
-            }
-        })
+async function checkAuthToken(){
+    authToken = localStorage.getItem('auth_token');
+
+    if(!authToken){
+        return createPost.style.display = 'none';
+    }
+
+    let response = await fetch('/authenticate',{
+        method: 'GET',
+        headers: {
+            'authorization': 'Bearer ' + authToken
+        }
+    })
+
+    if(response.status !== 200){
+        // token has expired, remove token and reload page
+        localStorage.removeItem('auth_token');
+        return window.location.reload();
+    }
+    else if(response.status === 200){
+        // Token is valid
         data = await response.json();
         currentUsername = data.username;
         createPost.style.display = 'block';
     }
-    else{
-        createPost.style.display = 'none';
-    }
 }
 
-checkToken();
+checkAuthToken();
 initializePosts();

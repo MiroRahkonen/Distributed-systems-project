@@ -11,47 +11,6 @@ const url = window.location.href;
 const spliturl = url.split('/');
 const postID = spliturl[4]; //Getting the postID from current url
 
-async function postComment(event){
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    const commentDetails = {
-        postID: postID,
-        username: currentUsername,
-        message: formData.get('message')
-    }
-
-    let response = await fetch('/comment/create',{
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + authToken
-        },
-        body: JSON.stringify(commentDetails)
-    })
-    let data = await response.json();
-    const newCommentID = data._id;
-
-    let upvoteDetails = {
-        type: 'comment',
-        postID: postID,
-        commentID: newCommentID
-    }
-
-    response = await fetch('/upvote/create',{
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'authorization': 'Bearer ' + authToken
-        },
-        body: JSON.stringify(upvoteDetails)
-    });
-
-    if(response.status === 200){
-        window.location.reload();
-    }
-}
-
 async function initializePost(){
     let response;
 
@@ -118,7 +77,10 @@ async function deletePost(){
     })
 
     if(response.status === 200){
-        window.location.replace('/');
+        M.toast({html: 'Post successfully deleted!'});
+        setTimeout(()=>{
+            window.location.replace('/');
+        },1500);
     }
 }
 
@@ -176,6 +138,59 @@ async function initializeComments(){
     })
 }
 
+
+async function postComment(event){
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const commentDetails = {
+        postID: postID,
+        username: currentUsername,
+        message: formData.get('message')
+    }
+
+    let response = await fetch('/comment/create',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + authToken
+        },
+        body: JSON.stringify(commentDetails)
+    })
+    let data = await response.json();
+    
+    if(response.status !== 200){
+        M.toast({html: 'Error posting comment, reloading'});
+        setTimeout(()=>{
+            return window.location.reload();
+        },1500);
+    }
+    const newCommentID = data._id;
+
+    let upvoteDetails = {
+        type: 'comment',
+        postID: postID,
+        commentID: newCommentID
+    }
+
+    response = await fetch('/upvote/create',{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'authorization': 'Bearer ' + authToken
+        },
+        body: JSON.stringify(upvoteDetails)
+    });
+
+    if(response.status === 200){
+        M.toast({html: 'Comment posted!'});
+        setTimeout(()=>{
+            window.location.reload();
+        },1000);
+    }
+}
+
+
 async function commentUpvote(i,upvoteChange){
     const commentID = commentlist[i]._id;
     let commentDetails = {
@@ -220,27 +235,40 @@ async function deleteComment(i){
     })
 
     if(response.status === 200){
-        window.location.reload();
+        M.toast({html: 'Comment deleted!'});
+        setTimeout(()=>{
+            window.location.reload();
+        },1500);
     }
 }
 
-async function checkToken(){
+async function checkAuthToken(){
     authToken = localStorage.getItem('auth_token');
-    if(authToken){
-        let response = await fetch('/user/currentuser',{
-            headers: {
-                'authorization': 'Bearer ' + authToken
-            }
-        })
+
+    if(!authToken){
+        return createCommentSection.style.display = 'none';
+    }
+
+    let response = await fetch('/authenticate',{
+        method: 'GET',
+        headers: {
+            'authorization': 'Bearer ' + authToken
+        }
+    })
+
+    // If token has expired, remove token and reload page
+    if(response.status !== 200){
+        localStorage.removeItem('auth_token');
+        return window.location.reload();
+    }
+    // If token is valid, set current username and show comment creation form
+    else if(response.status === 200){
         data = await response.json();
         currentUsername = data.username;
         createCommentSection.style.display = 'block';
     }
-    else{
-        createCommentSection.style.display = 'none';
-    }
 }
 
-checkToken();
+checkAuthToken();
 initializePost();
 initializeComments();
